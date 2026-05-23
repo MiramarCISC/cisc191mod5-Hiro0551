@@ -22,8 +22,7 @@ public class GameAlgorithms {
      * @return index of target, or -1 if not found
      */
     public static int findMatchRecursive(int[] sortedMatchIds, int target) {
-        // TODO: Replace this stub by calling a recursive helper method.
-        return -999;
+        return findMatchRecursiveHelper(sortedMatchIds, target, 0, sortedMatchIds.length - 1);
     }
 
     /**
@@ -36,8 +35,24 @@ public class GameAlgorithms {
      * @return index of target, or -1 if not found
      */
     private static int findMatchRecursiveHelper(int[] sortedMatchIds, int target, int low, int high) {
-        // TODO: Implement recursive binary search.
-        return -999;
+        if (low > high) {
+            return -1;
+        }
+
+        int mid = (low + high) / 2;
+
+        // Target accquired
+        if (sortedMatchIds[mid] == target) {
+            return mid;
+        }
+
+        // Search left
+        if (target < sortedMatchIds[mid]) {
+            return findMatchRecursiveHelper(sortedMatchIds, target, low, mid - 1);
+        }
+
+        // Search right
+        return findMatchRecursiveHelper(sortedMatchIds, target, mid + 1, high);
     }
 
     /**
@@ -48,8 +63,26 @@ public class GameAlgorithms {
      * @return index of target, or -1 if not found
      */
     public static int findMatchIterative(int[] sortedMatchIds, int target) {
-        // TODO: Implement iterative binary search with a loop.
-        return -999;
+
+       int low = 0;
+        int high = sortedMatchIds.length - 1;
+
+        while (low <= high) {
+
+            int mid = (low + high) / 2;
+
+            if (sortedMatchIds[mid] == target) {
+                return mid;
+            }
+
+            if (target < sortedMatchIds[mid]) {
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        return -1;
     }
 
     /**
@@ -66,8 +99,28 @@ public class GameAlgorithms {
      * @return number of connected walkable tiles
      */
     public static int countConnectedTilesRecursive(char[][] map, int startRow, int startCol) {
-        // TODO: Implement recursive flood-fill / connected tile counting.
-        return -999;
+        // Out of bounds
+        if (isOutOfBounds(map, startRow, startCol)) {
+            return 0;
+        }
+
+        // Not walkable
+        if (map[startRow][startCol] != '.') {
+            return 0;
+        }
+
+        // Mark visited
+        map[startRow][startCol] = 'V';
+
+        int count = 1;
+
+        // Search neighbors
+        count += countConnectedTilesRecursive(map, startRow - 1, startCol);
+        count += countConnectedTilesRecursive(map, startRow + 1, startCol);
+        count += countConnectedTilesRecursive(map, startRow, startCol - 1);
+        count += countConnectedTilesRecursive(map, startRow, startCol + 1);
+
+        return count;
     }
 
     /**
@@ -79,8 +132,41 @@ public class GameAlgorithms {
      * @return number of connected walkable tiles
      */
     public static int countConnectedTilesIterative(char[][] map, int startRow, int startCol) {
-        // TODO: Implement iterative flood-fill / connected tile counting.
-        return -999;
+        Deque<CellPosition> stack = new ArrayDeque<>();
+        stack.push(new CellPosition(startRow, startCol));
+
+        int count = 0;
+
+        while (!stack.isEmpty()) {
+
+            CellPosition current = stack.pop();
+
+            int row = current.row();
+            int col = current.col();
+
+            // Skip invalid positions
+            if (isOutOfBounds(map, row, col)) {
+                continue;
+            }
+
+            // Skip non-walkable or visited tiles
+            if (map[row][col] != '.') {
+                continue;
+            }
+
+            // Mark visited
+            map[row][col] = 'V';
+
+            count++;
+
+            // Push neighbors
+            pushNeighbor(stack, row - 1, col);
+            pushNeighbor(stack, row + 1, col);
+            pushNeighbor(stack, row, col - 1);
+            pushNeighbor(stack, row, col + 1);
+        }
+
+        return count;
     }
 
     /**
@@ -92,8 +178,7 @@ public class GameAlgorithms {
      * @return true if found, false otherwise
      */
     public static boolean containsMatch(BracketNode root, String target) {
-        // TODO: Replace this stub by calling a helper method.
-        return false;
+        return containsMatchHelper(root, target);
     }
 
     /**
@@ -104,8 +189,19 @@ public class GameAlgorithms {
      * @return true if found, false otherwise
      */
     private static boolean containsMatchHelper(BracketNode node, String target) {
-        // TODO: Implement recursive tree search.
-        return false;
+        // Base case
+        if (node == null) {
+            return false;
+        }
+
+        // Found target
+        if (node.getMatchName().equals(target)) {
+            return true;
+        }
+
+        // Search left or right subtree
+        return containsMatchHelper(node.getLeft(), target)
+                || containsMatchHelper(node.getRight(), target);
     }
 
     /**
