@@ -35,11 +35,12 @@ public class GameAlgorithms {
      * @return index of target, or -1 if not found
      */
     private static int findMatchRecursiveHelper(int[] sortedMatchIds, int target, int low, int high) {
-        if (low > high) {
+        if (low > high) { // correct base case
             return -1;
         }
 
-        int mid = (low + high) / 2;
+        // That had potential to lead to int wrapping if low + high exceeds the max value allowed for an int.
+        int mid = low + (high - low) / 2; // This prevents the possibility of that happening.
 
         // Target accquired
         if (sortedMatchIds[mid] == target) {
@@ -52,7 +53,7 @@ public class GameAlgorithms {
         }
 
         // Search right
-        return findMatchRecursiveHelper(sortedMatchIds, target, mid + 1, high);
+        return findMatchRecursiveHelper(sortedMatchIds, target, mid + 1, high); // Just pure perference on my end, having the else statement would make this part a TINY bit more clear
     }
 
     /**
@@ -67,7 +68,7 @@ public class GameAlgorithms {
        int low = 0;
         int high = sortedMatchIds.length - 1;
 
-        while (low <= high) {
+        while (low <= high) { // Proper base case represented in the while loop.
 
             int mid = (low + high) / 2;
 
@@ -83,7 +84,7 @@ public class GameAlgorithms {
         }
 
         return -1;
-    }
+    } // Good use of iteration, matches the sibling method very closely and well
 
     /**
      * Counts connected walkable tiles recursively.
@@ -100,7 +101,7 @@ public class GameAlgorithms {
      */
     public static int countConnectedTilesRecursive(char[][] map, int startRow, int startCol) {
         // Out of bounds
-        if (isOutOfBounds(map, startRow, startCol)) {
+        if (isOutOfBounds(map, startRow, startCol)) { // Proper base case
             return 0;
         }
 
@@ -121,7 +122,7 @@ public class GameAlgorithms {
         count += countConnectedTilesRecursive(map, startRow, startCol + 1);
 
         return count;
-    }
+    } // Another effective use of recursion, while preventing any potential for a stackover flow from infinite recursion
 
     /**
      * Counts connected walkable tiles iteratively using an explicit stack.
@@ -132,6 +133,10 @@ public class GameAlgorithms {
      * @return number of connected walkable tiles
      */
     public static int countConnectedTilesIterative(char[][] map, int startRow, int startCol) {
+        if (isOutofBounds(map, row, col) || map[startRow][startCol] = !".") {
+            return 0;
+        }
+        map[startRow][startCol] = 'V';
         Deque<CellPosition> stack = new ArrayDeque<>();
         stack.push(new CellPosition(startRow, startCol));
 
@@ -144,29 +149,30 @@ public class GameAlgorithms {
             int row = current.row();
             int col = current.col();
 
-            // Skip invalid positions
-            if (isOutOfBounds(map, row, col)) {
-                continue;
-            }
-
-            // Skip non-walkable or visited tiles
-            if (map[row][col] != '.') {
-                continue;
-            }
-
-            // Mark visited
-            map[row][col] = 'V';
-
             count++;
 
-            // Push neighbors
-            pushNeighbor(stack, row - 1, col);
-            pushNeighbor(stack, row + 1, col);
-            pushNeighbor(stack, row, col - 1);
-            pushNeighbor(stack, row, col + 1);
+            checkNeighbor(stack, row - 1, col);
+            checkNeighbor(stack, row + 1, col);
+            checkNeighbor(stack, row, col - 1);
+            checkNeighbor(stack, row, col + 1); // Only real potential issue is that neighbours are pushed before evaluation. This means that an invalid tile could be checked multiple times before being marked as invalid, making it slightly inefficient.
+            // I would recommend using a helper method to evaluate neighbours BEFORE pushing, while also immediately marking tiles as checked if they have been visited.
         }
 
         return count;
+    }
+
+    private static void checkNeighbor(char[][] map, Deque<CellPosition> stack, int row, int col) {
+        if (isOutOfBounds(map, row, col)) {
+            return;
+        }
+
+        if (map[row][col] != '.') {
+            return;
+        }
+
+        map[row][col] = 'V';
+
+        stack.push(new CellPosition(row, col));
     }
 
     /**
@@ -202,7 +208,8 @@ public class GameAlgorithms {
         // Search left or right subtree
         return containsMatchHelper(node.getLeft(), target)
                 || containsMatchHelper(node.getRight(), target);
-    }
+    } // Very effective. Only potential issue is if node.getMatchName() is null. You would get a NPE if null.equals(target) is ran by Java.
+    // You can use " if (Objects.equals(node.getMatchName(), target)) " inside, as it can handle null objects for you without throwing NPE.
 
     /**
      * Optional utility students may use if they want to avoid repeating bounds checks.
